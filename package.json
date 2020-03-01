@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo 'FIXME'",
-    "start-tcp-server": "node src/tcpserver.js"
+    "start-tcp-server": "node src/tcpserver.js",
+    "start-tcp-server-dev": "nodemon src/tcpserver.js",
+    "start-rest-server": "node src/restserver.js",
+    "start-rest-server-dev": "nodemon src/restserver.js"
   },
   "repository": {
     "type": "git",
@@ -19,10 +22,13 @@
   "homepage": "https://github.com/mircoc/vehicle-gateway#readme",
   "dependencies": {
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "http-errors": "^1.7.3",
     "ioredis": "^4.16.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "nodemon": "^2.0.2",
     "uuid": "^7.0.1"
   }
 }
