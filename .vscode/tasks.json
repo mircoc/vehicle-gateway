@@ -1,0 +1,30 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558 
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Device TCP Server Start",
+      "type": "npm",
+      "script": "start-tcp-server-dev",
+      "problemMatcher": []
+    },
+    {
+      "label": "User REST Server Start",
+      "type": "npm",
+      "script": "start-rest-server-dev",
+      "problemMatcher": []
+    },
+    {
+      "label": "Start both server",
+      "dependsOn": [
+        "Device TCP Server Start",
+        "User REST Server Start"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

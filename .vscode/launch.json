@@ -13,6 +13,26 @@
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/src/tcpserver.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start REST Server",
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/src/restserver.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test TCP Server",
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/test/clientDevice.js"
     }
   ]
 }
