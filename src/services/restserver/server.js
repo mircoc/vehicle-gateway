@@ -11,23 +11,24 @@ async function startServer() {
   if (!port) {
     throw new Error("Missing REST_SERVER_PORT env")
   }
+  const host = process.env.REST_SERVER_HOST;
+  if (!host) {
+    throw new Error("Missing REST_SERVER_HOST env")
+  }
   const app = await appCreator();
 
   app.set('port', port);
 
   const server = http.createServer(app);
 
-  server.listen(port);
+  server.listen(port, host);
   server.on('error', (error) => {
     throw error;
   });
 
   server.on('listening', () => {
-    const addr = server.address();
-    const bind = typeof addr === 'string'
-      ? 'pipe ' + addr
-      : 'port ' + addr.port;
-    logger.debug('Listening on ' + bind);
+    const address = server.address();
+    logger.debug(`server is listening at ${address.address}:${address.port} (${address.family})`);
   });
 }
 
