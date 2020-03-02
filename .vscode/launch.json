@@ -32,7 +32,20 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/test/clientDevice.js"
+      "program": "${workspaceFolder}/test-integration/clientDevice.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha test",
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--watch"
+      ]
     }
   ]
 }

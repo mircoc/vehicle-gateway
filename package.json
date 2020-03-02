@@ -4,7 +4,7 @@
   "description": "Connected vehicle gateway",
   "main": "index.js",
   "scripts": {
-    "test": "echo 'FIXME'",
+    "test": "mocha",
     "start-tcp-server": "node src/tcpserver.js",
     "start-tcp-server-dev": "nodemon src/tcpserver.js",
     "start-rest-server": "node src/restserver.js",
@@ -28,6 +28,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "mocha": "^7.1.0",
     "nodemon": "^2.0.2",
     "uuid": "^7.0.1"
   }

@@ -1,6 +1,7 @@
 const net = require('net');
-const uuidv4 = require('uuid/v4');
+const uuid = require('uuid');
 
+const TCP_SERVER_PORT = 8070;
 
 const keypress = async () => {
   process.stdin.setRawMode(true)
@@ -10,7 +11,7 @@ const keypress = async () => {
   }))
 }
 
-const deviceId = uuidv4();
+const deviceId = uuid.v4();
 
 const TEST_MESSAGES = [
   `HELLO, I'M ${deviceId}!`,
@@ -21,7 +22,7 @@ let testMessageSent = 0;
 // creating a custom socket client and connecting it....
 const client  = new net.Socket();
 client.connect({
-  port:1234
+  port:TCP_SERVER_PORT
 });
 
 client.on('connect',async function(){
@@ -42,12 +43,13 @@ client.on('connect',async function(){
     client.write(TEST_MESSAGES[testMessageSent++]);
   }
 
-  console.log('No more test command to send, closing connection...\n');
+  console.log('No more test command to send, press any key to close connection...\n');
+  await keypress();
   client.end('GOTTA GO.');
   // client.destroy();
   // process.exit(0);
-  client.unref();
-  process.exit(0);
+  // client.unref();
+  // process.exit(0);
 
 });
 
@@ -57,6 +59,10 @@ client.on('data',function(data){
   console.log(`SERVER: ${data}\n`);
 });
 
+client.on('close', () => {
+  console.log(`closing connection\n`);
+  process.exit(0);
+})
 // setTimeout(function(){
 //   client.end('Bye bye server');
 // },5000);
