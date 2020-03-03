@@ -1,3 +1,7 @@
+const {getLogger} = require('../logger');
+
+const logger = getLogger("Exploding Vehicle Protocol");
+
 /**
  * ExplodingScooters vehicles use "exp protocol" defined here, 
  * 
@@ -180,7 +184,58 @@ function getResponse(msgType) {
   return RESPONSES[msgType];
 }
 
+const COMMAND_TYPES = {
+  STATUS: 'STATUS',
+  POSTED: 'POSTED',
+  NOPOSTED: 'NOPOSTED',
+  RUN: 'RUN',
+  REST: 'REST',
+  CLOSE: 'CLOSE',
+}
+
+const COMMAND_RESPONSE_TYPES = {
+  GOT_STATUS: 'status',
+  GOT_REPORT: 'report',
+  OK_POSTED: 'postedOk',
+  OK_RUN: 'runRestOk',
+  OK_REST: 'runRestOk',
+  KO_RUN: 'runRestKo',
+  KO_REST: 'runRestKo',
+  GOT_BUG: 'bugReport',
+  OK_LEAVE: 'leaveAck'
+}
+
+/**
+ * 
+ * @param {COMMAND_TYPES} type 
+ * @param {Object} params 
+ */
+function composeCommand(type, params = {}) {
+  switch (type) {
+    case COMMAND_TYPES.STATUS:
+      return "HOW'S IT GOING?";
+    case COMMAND_TYPES.POSTED:
+      // get second from params, default to 60 (max: 3600, min: 10)
+      const seconds = Math.max(10, Math.min(3600, (params ? params.seconds : 60)));
+      return `KEEP ME POSTED EVERY ${seconds} SECONDS.`;
+    case COMMAND_TYPES.NOPOSTED:
+      return `KEEP ME POSTED EVERY 0 SECONDS.`;
+    case COMMAND_TYPES.RUN:
+      return `HEY YOU, RUN!`;
+    case COMMAND_TYPES.REST:
+      return `HEY YOU, REST!`;
+    case COMMAND_TYPES.CLOSE:
+      return `GOTTA GO.`;
+    default:
+      logger.error(`Unknown command request: ${type}`);
+      return '';
+  }
+}
+
 module.exports = {
   getMessagesHandlers,
-  getResponse
+  getResponse,
+  composeCommand,
+  COMMAND_TYPES,
+  COMMAND_RESPONSE_TYPES
 }
