@@ -1,20 +1,31 @@
 // const net = require('net');
 
 const {getLogger} = require('../logger');
-const {handleMessage} = require('../vehicle');
+const {handleVehicleMessage, handleUserMessage, handleCloseConnection, getUser2VehicleChannelKey} = require('../vehicle');
+const {getRedis, getSubscriptionRedis} = require('../redis');
 
+const redis = getRedis();
+const redisSubscription = getSubscriptionRedis();
 
 const logger = getLogger("TCP Server app");
 
-function getDeviceId4Log(socket) {
+function getDeviceId(socket) {
   if (!socket) {
-    return '?';
+    return '';
   }
-  return socket._vehicleSession ? socket._vehicleSession.deviceId ? socket._vehicleSession.deviceId : '-' : '-';
+  return socket._vehicleSession ? socket._vehicleSession.deviceId ? socket._vehicleSession.deviceId : '' : '';
+}
+
+function getDeviceId4Log(socket) {
+  const deviceId = getDeviceId(socket);
+  return deviceId ? deviceId : '-';
 }
 
 function app(socket) {  
   logger.info('client connected');
+
+  // sort of session for this connection
+  socket._vehicleSession = {};
 
   socket.setEncoding('utf8');
 
@@ -26,32 +37,43 @@ function app(socket) {
     logger.info('Socket timed out');
   });
   
+  const onResponse = (response) => {
+    logger.debug(`[${getDeviceId4Log(socket)}] Send response: ${response}`);
+    const flushedAll = socket.write(response);
+    if (!flushedAll) {
+      logger.debug(`[${getDeviceId4Log(socket)}] write buffer full, pausing...`);
+      socket.pause();
+    }
+  };
+
+  const onUpdateSession = (socketSessionName, socketSessionValue) => {
+    const currentSession = socket._vehicleSession ? socket._vehicleSession : {};
+    socket._vehicleSession = {
+      ...currentSession,
+      [socketSessionName]: socketSessionValue
+    };
+    logger.debug(`[${getDeviceId4Log(socket)}] session update for ${socketSessionName}: ${socketSessionValue}`);
+  };
   
+  // receive commands from user, formatted by services/vehicle/index.js:sendCommand()
+  redisSubscription.on('message', (channel, message) => {
+    const deviceId = getDeviceId(socket);
+    const expetedChannelKey = getUser2VehicleChannelKey(deviceId);
+    
+    if (channel !== expetedChannelKey) {
+      logger.warn(`Received redis message from not expected channel: ${channel}`);
+      return;
+    }
+
+    handleUserMessage(message, socket._vehicleSession, onResponse, onUpdateSession);
+  });
+
   socket.on('data', (data) => {
     // logger.debug(`Bytes read: ${socket.bytesRead}. Bytes written: ${socket.bytesWritten}`);
 
     logger.debug(`[${getDeviceId4Log(socket)}] Data received from server: ${data}`);
   
-    handleMessage(
-      data,
-      socket._vehicleSession,
-      (response) => {
-        logger.debug(`[${getDeviceId4Log(socket)}] Send response: ${response}`);
-        const flushedAll = socket.write(response);
-        if (!flushedAll) {
-          logger.debug(`[${getDeviceId4Log(socket)}] write buffer full, pausing...`);
-          socket.pause();
-        }
-      },
-      (socketSessionName, socketSessionValue) => {
-        const currentSession = socket._vehicleSession ? socket._vehicleSession : {};
-        socket._vehicleSession = {
-          ...currentSession,
-          [socketSessionName]: socketSessionValue
-        };
-        logger.debug(`[${getDeviceId4Log(socket)}] session update for ${socketSessionName}: ${socketSessionValue}`);
-      }
-    );
+    handleVehicleMessage( data, socket._vehicleSession, onResponse, onUpdateSession );
   });
   
   socket.on('drain', () => {
@@ -75,6 +97,10 @@ function app(socket) {
   });
   
   socket.on('close',function(error){
+    handleCloseConnection(socket._vehicleSession);
+
+    socket._vehicleSession = {}; // clear session just to be sure
+
     logger.debug(`[${getDeviceId4Log(socket)}] Bytes read: ${socket.bytesRead}. Bytes written: ${socket.bytesWritten}`);
     logger.debug(`[${getDeviceId4Log(socket)}] Socket closed!`);
     if(error){

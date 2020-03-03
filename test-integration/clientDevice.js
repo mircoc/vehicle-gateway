@@ -15,7 +15,8 @@ const deviceId = uuid.v4();
 
 const TEST_MESSAGES = [
   `HELLO, I'M ${deviceId}!`,
-  'PING.'
+  "FINE. I'M HERE 43.62152 11.4638716, RESTING AND CHARGED AT 100%.",
+  'PING.',
 ];
 let testMessageSent = 0;
 
@@ -43,7 +44,7 @@ client.on('connect',async function(){
     client.write(TEST_MESSAGES[testMessageSent++]);
   }
 
-  console.log('No more test command to send, press any key to close connection...\n');
+  console.log('No more test command to send, press any key to send: GOTTA GO\n');
   await keypress();
   client.end('GOTTA GO.');
   // client.destroy();
