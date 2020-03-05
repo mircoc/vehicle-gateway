@@ -52,6 +52,7 @@ function getLogger(label) {
     info: (message) => logger.log({ level: 'info', message, label }),
     verbose: (message) => logger.log({ level: 'verbose', message, label }),
     debug: (message) => logger.log({ level: 'debug', message, label }),
+    profile: (message) => logger.profile(message, { label }),
   }
 }
 

@@ -2,11 +2,17 @@ const createError = require('http-errors');
 const express = require('express');
 
 const {getLogger} = require('../logger');
+const {startWorker} = require('./webHookWorker');
 const logReqest = require('../../helpers/logRequest')
 
 const logger = getLogger("REST Server App");
 
 async function appCreator() {
+
+  // start webhook dequeue and call worker
+  // check for message to process every 5 seconds
+  startWorker(5);
+
 
   const deviceRouter = require('./deviceRouter');
   
