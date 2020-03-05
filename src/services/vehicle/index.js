@@ -1,6 +1,7 @@
 const {getLogger} = require('../logger');
 const {getRedis, getSubscriptionRedis} = require('../redis');
 const {getMessagesHandlers, getResponse, COMMAND_TYPES, composeCommand, COMMAND_RESPONSE_TYPES} = require('./expProtocol');
+const {sendMessage} = require('../messageQueue');
 
 const logger = getLogger("Vehicle");
 const redis = getRedis();
@@ -116,7 +117,7 @@ const RESPONSE_HANDLERS = {
   ping: onPing,
   leave: onLeave,
   status: onSend2RedisResponse,
-  report: onSend2RedisResponse,
+  report: onSend2QueueResponse,
   postedOk: onSend2RedisResponse,
   runRestOk: onSend2RedisResponse,
   runRestKo: onSend2RedisResponse,
@@ -183,6 +184,22 @@ async function onSend2RedisResponse(type, params, session, onResponse, onUpdateS
   }
 }
 
+async function onSend2QueueResponse(type, params, session, _onResponse, _onUpdateSession) {
+  const deviceId = session.deviceId;
+  if (deviceId) {
+    await publishToQueue(type, deviceId, params);
+    
+  } else {
+    logger.warn("Missing deviceId on session");
+  }
+  
+  // const response = getResponse(type);
+  // if (response) {
+  //   await onResponse(response);
+  // }
+}
+
+
 async function onLeave(type, params, session, onResponse, onUpdateSession) {
   const response = getResponse(type);
   const deviceId = session.deviceId;
@@ -195,6 +212,10 @@ async function onLeave(type, params, session, onResponse, onUpdateSession) {
   if (response) {
     await onResponse(response);
   }
+}
+
+async function publishToQueue(type, deviceId, params) {
+  await sendMessage(deviceId, type, params);
 }
 
 async function publishToRedis(type, deviceId, params) {
