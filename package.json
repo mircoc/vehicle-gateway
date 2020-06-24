@@ -32,6 +32,6 @@
   "devDependencies": {
     "mocha": "^7.1.0",
     "nodemon": "^2.0.2",
-    "uuid": "^7.0.1"
+    "uuid": "^8.2.0"
   }
 }
