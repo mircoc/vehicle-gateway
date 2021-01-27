@@ -26,7 +26,7 @@
     "express": "^4.17.1",
     "http-errors": "^1.7.3",
     "ioredis": "^4.16.0",
-    "rsmq": "^0.12.0",
+    "rsmq": "^0.12.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
